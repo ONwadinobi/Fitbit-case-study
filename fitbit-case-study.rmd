@@ -1,0 +1,328 @@
+---
+title: "How a Wellness Tech Company Can Play It Smart"
+author: "ONwadinobi"
+date: "2024-01-15"
+output: 
+  html_document:
+    toc: true
+---
+
+# Introduction
+Bellabeat is a high-tech manufacturer of health-focused products for women. Bellabeat developed beautifully designed technology that informs and inspires women around the world. Collecting data on their activity, sleep, stress, and reproductive health has allowed Bellabeat to empower women with knowledge about their own health and habits. Bellabeat is a successful small company, but they have the potential to become a larger player in the global smart device market.
+
+
+## Products of the Company
+Bellabeat app: The Bellabeat app provides users with health data related to their activity, sleep, stress,menstrual cycle, and mindfulness habits. This   data can help users better understand their current habits and make healthy   decisions. The Bellabeat app connects to their line of smart   wellness       products.
+Leaf: Bellabeat’s classic wellness tracker can be worn as a bracelet,necklace, or clip. The Leaf tracker connects to the Bellabeat app to track    activity, sleep, and stress.
+Time: This wellness watch combines the timeless look of a classic timepiece with smart technology to track user activity, sleep, and stress. The Time     watch connects to the Bellabeat app to provide you with insights into your    daily wellness.
+Spring: This is a water bottle that tracks daily water intake using smart technology to ensure that you are appropriately hydrated throughout the       day. The Spring bottle connects to the Bellabeat app to track your            hydration levels.
+Bellabeat membership: Bellabeat also offers a subscription-based membership program for users.Membership gives users 24/7 access to fully personalized    guidance on nutrition, activity, sleep, health and beauty, and mindfulness    based on their lifestyle and goals.
+
+## Business Questions
+1. What are some trends in smart device usage?
+2. How could these trends apply to Bellabeat customers?
+3. How could these trends help influence Bellabeat marketing strategy?
+
+## Description of Data source
+The dataset for this study is an open source data: FitBit Fitness tracker, (CCO: Public Domain; Made public through Mobius), of 30 FitBit customers personal fitness trackers included in kaggle data collection. it contains data (daily activity, sleep) of the customers that can be examined to appreciate the routines of the users of the device.
+
+## Limitations of the dataset
+On overview of the metadata of the dataset,
+1) The data was collected about 7 years ago (2016). Therefore, logical to assert that the data is not current as the users daily routines may have changed overtime.
+2) The dataset is from a sample size of only 30 smart device users which is an under representation of the population of smart fitness device users.
+3) The dataset was obtained from unidentifiable third party, and this questions the originality of the dataset and has consequential implications on the quality of the data which is apparently low. 
+  Based on the limitations of the data, It will not necessarily be advisable to base current business decisions on the recommendations emanating from the scrutiny of this current datasets.
+
+## Method
+I have used R Markdown to tentatively work on this project; document the steps, run the codes, attach visualizations and produce a concluding report of the study.
+I applied data wrangling and exploration processes to make inferences. Then after the data has been prepared for analysis, I used tableau public for the visualization of the data.
+
+## load necessary packages
+
+``` {r, packages, message = FALSE}
+library(tidyverse)
+library(lubridate)
+library(tidyr)
+library(dplyr)
+library(skimr)
+library(janitor)
+```
+
+```{r, datasets}
+daily_activity <- read.csv("/kaggle/input/fitbit/Fitabase Data 4.12.16-5.12.16/dailyActivity_merged.csv")
+daily_Calories <- read.csv("/kaggle/input/fitbit/Fitabase Data 4.12.16-5.12.16/dailyCalories_merged.csv")
+daily_Steps <- read.csv("/kaggle/input/fitbit/Fitabase Data 4.12.16-5.12.16/dailySteps_merged.csv")
+daily_intensities <- read.csv("/kaggle/input/fitbit/Fitabase Data 4.12.16-5.12.16/dailyIntensities_merged.csv")
+Heart_rate_sec <- read.csv("/kaggle/input/fitbit/Fitabase Data 4.12.16-5.12.16/heartrate_seconds_merged.csv")
+hourly_Calories <- read.csv("/kaggle/input/fitbit/Fitabase Data 4.12.16-5.12.16/hourlyCalories_merged.csv")
+hourly_Steps <- read.csv("/kaggle/input/fitbit/Fitabase Data 4.12.16-5.12.16/hourlySteps_merged.csv")
+hourly_intensities <- read.csv("/kaggle/input/fitbit/Fitabase Data 4.12.16-5.12.16/hourlyIntensities_merged.csv")
+daily_sleep <- read.csv("/kaggle/input/fitbit/Fitabase Data 4.12.16-5.12.16/sleepDay_merged.csv")
+```
+## Explore and clean data
+```{r, look}
+head(daily_activity)
+head(daily_Calories)
+head(daily_intensities)
+head(daily_sleep)
+head(daily_Steps)
+head(Heart_rate_sec)
+head(hourly_Calories)
+head(hourly_intensities)
+head(hourly_Steps)
+```
+```{r, check}
+glimpse(daily_activity)
+glimpse(daily_Calories)
+glimpse(daily_intensities)
+glimpse(daily_sleep)
+glimpse(daily_Steps)
+glimpse(Heart_rate_sec)
+glimpse(hourly_Calories)
+glimpse(hourly_intensities)
+glimpse(hourly_Steps)
+```
+
+## Format the Dates and time for consistency
+
+{r, dateform, warning = FALSE}
+daily_sleep <- daily_sleep %>%
+  rename(Date = SleepDay) %>%
+  mutate(Date = as_date(Date, format = "%m/%d/%Y"))
+
+daily_activity <- daily_activity %>%
+  rename(Date = ActivityDate) %>%
+  mutate(Date = as_date(Date, format = "%m/%d/%Y"))
+
+daily_Calories <- daily_Calories %>%
+  rename(Date = ActivityDay) %>%
+  mutate(Date = as_date(Date, format = "%m/%d/%Y"))
+
+daily_intensities <- daily_intensities %>%
+  rename(Date = ActivityDay) %>%
+  mutate(Date = as_date(Date, format = "%m/%d/%Y"))
+
+daily_Steps <- daily_Steps %>%
+  rename(Date = ActivityDay) %>%
+  mutate(Date = as_date(Date, format = "%m/%d/%Y"))
+```
+```{r, timeform}
+Heart_rate_sec <- Heart_rate_sec %>%
+  rename(Date = Time) %>%
+  mutate(Date = as_date(Date, format = "%m/%d/%Y %I:%M:%S %p"))
+
+hourly_Calories$ActivityHour = as.POSIXct(hourly_Calories$ActivityHour, 
+                                          format = "%m/%d/%Y %I:%M:%S %p", tz = Sys.timezone())
+hourly_Calories$time <- format(hourly_Calories$ActivityHour, format = "%H:%M:%S")
+hourly_Calories$date <- format(hourly_Calories$ActivityHour, format = "%m/%d/%y")
+
+
+hourly_intensities$ActivityHour = as.POSIXct(hourly_intensities$ActivityHour, 
+                                          format = "%m/%d/%Y %I:%M:%S %p", tz = Sys.timezone())
+hourly_intensities$time <- format(hourly_intensities$ActivityHour, format = "%H:%M:%S")
+hourly_intensities$date <- format(hourly_intensities$ActivityHour, format = "%m/%d/%y")
+
+hourly_Steps$ActivityHour = as.POSIXct(hourly_Steps$ActivityHour, 
+                                          format = "%m/%d/%Y %I:%M:%S %p", tz = Sys.timezone())
+hourly_Steps$time <- format(hourly_Steps$ActivityHour, format = "%H:%M:%S")
+hourly_Steps$date <- format(hourly_Steps$ActivityHour, format = "%m/%d/%y")
+```
+
+## Assess for any duplicate values using n_distinct()
+```{r, distinct}
+n_distinct(daily_activity$Id)
+n_distinct(daily_Calories$Id)
+n_distinct(daily_intensities$Id)
+n_distinct(hourly_Calories$Id)
+n_distinct(hourly_intensities$Id)
+n_distinct(hourly_Steps$Id)
+```
+## Use sum(duplicated()) to look for total of any repeat value
+```{r, repeatvalue}
+sum(duplicated(daily_activity))
+sum(duplicated(daily_Calories))
+sum(duplicated(daily_intensities))
+sum(duplicated(hourly_Calories))
+sum(duplicated(hourly_intensities))
+sum(duplicated(hourly_Steps))
+```
+### There are no duplicate values seen from the results
+
+
+## Do a quick summary of selected variables with the summary()
+```{r, stats}
+daily_activity %>%
+  select(TotalDistance, TotalSteps, TrackerDistance, 
+         LoggedActivitiesDistance) %>%
+  summary()
+
+daily_activity %>%
+  select(VeryActiveDistance, ModeratelyActiveDistance, LightActiveDistance) %>%
+  summary()
+
+daily_activity %>%
+  select(VeryActiveMinutes, LightlyActiveMinutes, FairlyActiveMinutes) %>%
+  summary()
+
+daily_sleep %>%
+  select(TotalSleepRecords, TotalMinutesAsleep, TotalTimeInBed) %>%
+  summary()
+
+hourly_Calories %>%
+  select(Calories) %>%
+  summary()
+
+hourly_intensities %>%
+  select(TotalIntensity, AverageIntensity) %>%
+  summary()
+
+hourly_Steps %>%
+  select(StepTotal) %>%
+  summary()
+```
+### Join daily activity and daily sleep with Id, which is unique for each person, and Date as their Join
+```{r, merger}
+daily_activity_sleep <- merge(daily_activity, daily_sleep, by = "Id")
+```
+```{r, ActiveMin}
+Average_Active_Minutes <- daily_activity_sleep %>%
+  summarize(Average_VeryActiveMinutes = mean(VeryActiveMinutes),
+            Average_FairlyActiveMinutes = mean(FairlyActiveMinutes),
+            Average_LightActiveMinutes = mean(LightlyActiveMinutes),
+            Average_SedentaryMinutes = mean(SedentaryMinutes))
+```
+## Convert the format using pivot_long()
+```{r, longform}
+Average_Active_Minutes_long <- Average_Active_Minutes %>%
+  pivot_longer(cols = starts_with("Average_"),
+               names_to = "Active_Minute_type",
+               values_to = "AverageMinutes")
+```
+##  Change time from minutes to hours 
+```{r, min/60}
+daily_activity_sleep_hours <- daily_activity_sleep %>%
+  mutate(TotalhoursAsleep = TotalMinutesAsleep/60, 
+         TotalhoursInBed = TotalTimeInBed/60, 
+         Sedentaryhours = SedentaryMinutes/60)
+```
+```{r, longDistance}
+aggregated_Active_Distance <- daily_activity %>%
+  summarize(Total_VeryActiveDistance = sum(VeryActiveDistance),
+            Total_ModeratelyActiveDistance = sum(ModeratelyActiveDistance),
+            Total_LightActiveDistance = sum(LightActiveDistance))
+
+aggregated_Active_Distance_long <- aggregated_Active_Distance %>%
+  pivot_longer(cols = starts_with("Total_"),
+               names_to = "DistanceType",
+               values_to = "TotalDistance")
+```
+##  I will visualize the analysis using Tableau
+
+###   Relationship between  Tracker distance and calories
+
+<div class='tableauPlaceholder' id='viz1705011311682' style='position: relative'><noscript><a href='#'><img alt='Tracker Distance Vs Calories ' src='https:&#47;&#47;public.tableau.com&#47;static&#47;images&#47;Pr&#47;ProjectViz1_17044544362760&#47;TrackerDistanceVsCalories&#47;1_rss.png' style='border: none' /></a></noscript><object class='tableauViz'  style='display:none;'><param name='host_url' value='https%3A%2F%2Fpublic.tableau.com%2F' /> <param name='embed_code_version' value='3' /> <param name='site_root' value='' /><param name='name'value='ProjectViz1_17044544362760&#47;TrackerDistanceVsCalories' /><param name='tabs' value='no' /><param name='toolbar' value='yes' /><param name='static_image'value='https:&#47;&#47;public.tableau.com&#47;static&#47;images&#47;Pr&#47;ProjectViz1_17044544362760&#47;TrackerDistanceVsCalories&#47;1.png' /> <param name='animate_transition' value='yes' /><param name='display_static_image' value='yes' /><param name='display_spinner' value='yes' /><param name='display_overlay' value='yes' /><param name='display_count' value='yes' /><param name='language' value='en-US' /></object></div>                
+````{js, embedcode1, echo = FALSE}
+var divElement = document.getElementById('viz1705011311682');                 var vizElement = divElement.getElementsByTagName('object')[0];                vizElement.style.width='100%';
+vizElement.style.height=(divElement.offsetWidth*0.75)+'px';                   var scriptElement = document.createElement('script');                    scriptElement.src = 'https://public.tableau.com/javascripts/api/viz_v1.js';  vizElement.parentNode.insertBefore(scriptElement, vizElement);
+````
+1) Observing the chart, a positive correlation between the 2 variables can be appreciated. This is indicative that as the distance (tracked) covered by the tracker device users increases, the amount of calories expended or burnt out correspondingly increases as well.
+2) This positive relationship between both variables can be used as a valid factor in encouraging more individuals about improving their fitness and their well-being in general.
+
+###   Relationship between Very Active Minutes and Calories
+
+<div class='tableauPlaceholder' id='viz1705012542300' style='position: relative'><noscript><a href='#'><img alt='Very Active Minutes Vs Calories ' src='https:&#47;&#47;public.tableau.com&#47;static&#47;images&#47;Pr&#47;ProjectVisuals_17047998570270&#47;VeryActiveMinutesVsCalories&#47;1_rss.png' style='border: none' /></a></noscript><object class='tableauViz'  style='display:none;'><param name='host_url' value='https%3A%2F%2Fpublic.tableau.com%2F' /> <param name='embed_code_version' value='3' /> <param name='site_root' value='' /><param name='name' value='ProjectVisuals_17047998570270&#47;VeryActiveMinutesVsCalories' /><param name='tabs' value='no' /><param name='toolbar' value='yes' /><param name='static_image' value='https:&#47;&#47;public.tableau.com&#47;static&#47;images&#47;Pr&#47;ProjectVisuals_17047998570270&#47;VeryActiveMinutesVsCalories&#47;1.png' /> <param name='animate_transition' value='yes' /><param name='display_static_image' value='yes' /><param name='display_spinner' value='yes' /><param name='display_overlay' value='yes' /><param name='display_count' value='yes' /><param name='language' value='en-US' /></object></div>     
+````{js, embedcode2, echo = FALSE} 
+var divElement = document.getElementById('viz1705012542300');               var vizElement = divElement.getElementsByTagName('object')[0];                vizElement.style.width='100%';
+vizElement.style.height=(divElement.offsetWidth*0.75)+'px';                   
+var scriptElement = document.createElement('script');                    scriptElement.src = 'https://public.tableau.com/javascripts/api/viz_v1.js';  vizElement.parentNode.insertBefore(scriptElement, vizElement);
+````
+1) The graph of Very Active Minutes Vs Calories also evidently depicts a positive relationship between them; as the minutes the users actively engages in physical exercises increase, the quantity of energy (Calories) burnt equally tend to increase.
+2) This insight can also be adopted in designing a means of health promotion to attract and encourage more people to key into improving and maintaining their fitness levels.
+
+###   Correlation between Total Steps and Calories
+
+<div class='tableauPlaceholder' id='viz1705013922595' style='position: relative'><noscript><a href='#'><img alt='Total Steps Vs Calories ' src='https:&#47;&#47;public.tableau.com&#47;static&#47;images&#47;Vi&#47;Viz_17050137666930&#47;TotalStepsVsCalories&#47;1_rss.png' style='border: none' /></a></noscript><object class='tableauViz'  style='display:none;'><param name='host_url' value='https%3A%2F%2Fpublic.tableau.com%2F' /> <param name='embed_code_version' value='3' /> <param name='site_root' value='' /><param name='name' value='Viz_17050137666930&#47;TotalStepsVsCalories' /><param name='tabs' value='no' /><param name='toolbar' value='yes' /><param name='static_image' value='https:&#47;&#47;public.tableau.com&#47;static&#47;images&#47;Vi&#47;Viz_17050137666930&#47;TotalStepsVsCalories&#47;1.png' /> <param name='animate_transition' value='yes' /><param name='display_static_image' value='yes' /><param name='display_spinner' value='yes' /><param name='display_overlay' value='yes' /><param name='display_count' value='yes' /><param name='language' value='en-US' /></object></div>    
+````{js, embedcode3, echo = FALSE}
+var divElement = document.getElementById('viz1705013922595');                 var vizElement = divElement.getElementsByTagName('object')[0];                vizElement.style.width='100%';
+vizElement.style.height=(divElement.offsetWidth*0.75)+'px';                   var scriptElement = document.createElement('script');                    scriptElement.src = 'https://public.tableau.com/javascripts/api/viz_v1.js';  vizElement.parentNode.insertBefore(scriptElement, vizElement);
+````
+1) Examining the graph, it can be appreciated that there is  a positive correlation between Total Steps and Calories; as the number of steps covered by the consumers increases, the amount of energy spent also increases.
+2) Invariably, from the 3 graphs above, it can be comprehensively inferred that the amount of calories burn out increases as the device users actively engaged in physical activities.
+
+
+###     Relationship between Total hours Asleep and Total Time in Bed
+
+
+<div class='tableauPlaceholder' id='viz1705014443301' style='position: relative'><noscript><a href='#'><img alt='Total hours Asleep Vs Total Time In Bed ' src='https:&#47;&#47;public.tableau.com&#47;static&#47;images&#47;Pr&#47;ProjectViz3_17044545571460&#47;TotalhoursAsleepVsTotalTimeInBed&#47;1_rss.png' style='border: none' /></a></noscript><object class='tableauViz'  style='display:none;'><param name='host_url' value='https%3A%2F%2Fpublic.tableau.com%2F' /> <param name='embed_code_version' value='3' /> <param name='site_root' value='' /><param name='name' value='ProjectViz3_17044545571460&#47;TotalhoursAsleepVsTotalTimeInBed' /><param name='tabs' value='no' /><param name='toolbar' value='yes' /><param name='static_image' value='https:&#47;&#47;public.tableau.com&#47;static&#47;images&#47;Pr&#47;ProjectViz3_17044545571460&#47;TotalhoursAsleepVsTotalTimeInBed&#47;1.png' /> <param name='animate_transition' value='yes' /><param name='display_static_image' value='yes' /><param name='display_spinner' value='yes' /><param name='display_overlay' value='yes' /><param name='display_count' value='yes' /><param name='language' value='en-US' /></object></div>   
+````{js, embedcode4, echo = FALSE}
+var divElement = document.getElementById('viz1705014443301');                 var vizElement = divElement.getElementsByTagName('object')[0];                vizElement.style.width='100%';
+vizElement.style.height=(divElement.offsetWidth*0.75)+'px';                   var scriptElement = document.createElement('script');                    scriptElement.src = 'https://public.tableau.com/javascripts/api/viz_v1.js';   vizElement.parentNode.insertBefore(scriptElement, vizElement); 
+````
+1) This graph informs of a positive correlation between the total hours asleep and the total time spent in bed by the device users. This depicts a healthy sleep pattern and adequate sleep has implications on the overall well-being of an individual.
+2) It indicates that the consumers gain information on their sleep pattern by monitoring their sleep with a tracker, and this can equip them in decision making about their sleep health. An incorporation of a tool in the App for promoting healthy sleep habit would be a good marketing strategy.
+
+###   Relationship between Sedentary hours and Total hours Asleep
+
+<div class='tableauPlaceholder' id='viz1705016828803' style='position: relative'><noscript><a href='#'><img alt='Sedentary hours Vs Total hours Asleep ' src='https:&#47;&#47;public.tableau.com&#47;static&#47;images&#47;Pr&#47;ProjectViz4&#47;SedentaryhoursVsTotalhoursAsleep&#47;1_rss.png' style='border: none' /></a></noscript><object class='tableauViz'  style='display:none;'><param name='host_url' value='https%3A%2F%2Fpublic.tableau.com%2F' /> <param name='embed_code_version' value='3' /> <param name='site_root' value='' /><param name='name' value='ProjectViz4&#47;SedentaryhoursVsTotalhoursAsleep' /><param name='tabs' value='no' /><param name='toolbar' value='yes' /><param name='static_image' value='https:&#47;&#47;public.tableau.com&#47;static&#47;images&#47;Pr&#47;ProjectViz4&#47;SedentaryhoursVsTotalhoursAsleep&#47;1.png' /> <param name='animate_transition' value='yes' /><param name='display_static_image' value='yes' /><param name='display_spinner' value='yes' /><param name='display_overlay' value='yes' /><param name='display_count' value='yes' /><param name='language' value='en-US' /></object></div> 
+````{js, embedcode5, echo = FALSE}
+var divElement = document.getElementById('viz1705016828803');                 var vizElement = divElement.getElementsByTagName('object')[0];                vizElement.style.width='100%';
+vizElement.style.height=(divElement.offsetWidth*0.75)+'px';                   var scriptElement = document.createElement('script');                    scriptElement.src = 'https://public.tableau.com/javascripts/api/viz_v1.js';  vizElement.parentNode.insertBefore(scriptElement, vizElement); 
+````
+1) The graph shows that the more the hours spent engaged in little physical activity, the less spent for sleeping; and which implies less quality sleep. So there is a negative trend between both variables.
+2) Regular exercise enhances healthy sleep pattern and impacts positively on physical and mental health. Therefore, this insight would be consequential for promotion of the product to individuals with implied lifestyle to encourage on improving their sleep habit.
+
+###   Comparing Total steps within the Hours of the Day
+
+<div class='tableauPlaceholder' id='viz1705017194443' style='position: relative'><noscript><a href='#'><img alt='Total Steps within the hours of the Day ' src='https:&#47;&#47;public.tableau.com&#47;static&#47;images&#47;Pr&#47;ProjectViz5&#47;TotalStepswithinthehoursoftheDay&#47;1_rss.png' style='border: none' /></a></noscript><object class='tableauViz'  style='display:none;'><param name='host_url' value='https%3A%2F%2Fpublic.tableau.com%2F' /> <param name='embed_code_version' value='3' /> <param name='site_root' value='' /><param name='name' value='ProjectViz5&#47;TotalStepswithinthehoursoftheDay' /><param name='tabs' value='no' /><param name='toolbar' value='yes' /><param name='static_image' value='https:&#47;&#47;public.tableau.com&#47;static&#47;images&#47;Pr&#47;ProjectViz5&#47;TotalStepswithinthehoursoftheDay&#47;1.png' /> <param name='animate_transition' value='yes' /><param name='display_static_image' value='yes' /><param name='display_spinner' value='yes' /><param name='display_overlay' value='yes' /><param name='display_count' value='yes' /><param name='language' value='en-US' /></object></div>   
+````{js, embedcode6, echo = FALSE} 
+var divElement = document.getElementById('viz1705017194443');               var vizElement = divElement.getElementsByTagName('object')[0];                vizElement.style.width='100%';
+vizElement.style.height=(divElement.offsetWidth*0.75)+'px';                   var scriptElement = document.createElement('script');                    scriptElement.src = 'https://public.tableau.com/javascripts/api/viz_v1.js';  vizElement.parentNode.insertBefore(scriptElement, vizElement);  
+````
+1) This graph shows that the consumers appear to be more physically engaged in activity in the evening (1800) compared to other hours of the day but however, tends to start reducing continuously after 1900.
+2) Availing the consumers with this type of crucial information about their individualized pattern( their most active period of the day), will enable them make informed decisions about optimizing their routines and improving their health.
+
+###   Comparing Average Minutes by Active Minutes Type
+
+<div class='tableauPlaceholder' id='viz1705017487341' style='position: relative'><noscript><a href='#'><img alt='Average Minutes by Active Minute Type ' src='https:&#47;&#47;public.tableau.com&#47;static&#47;images&#47;Pr&#47;ProjectViz8&#47;AverageMinutesbyActiveMinuteType&#47;1_rss.png' style='border: none' /></a></noscript><object class='tableauViz'  style='display:none;'><param name='host_url' value='https%3A%2F%2Fpublic.tableau.com%2F' /> <param name='embed_code_version' value='3' /> <param name='site_root' value='' /><param name='name' value='ProjectViz8&#47;AverageMinutesbyActiveMinuteType' /><param name='tabs' value='no' /><param name='toolbar' value='yes' /><param name='static_image' value='https:&#47;&#47;public.tableau.com&#47;static&#47;images&#47;Pr&#47;ProjectViz8&#47;AverageMinutesbyActiveMinuteType&#47;1.png' /> <param name='animate_transition' value='yes' /><param name='display_static_image' value='yes' /><param name='display_spinner' value='yes' /><param name='display_overlay' value='yes' /><param name='display_count' value='yes' /><param name='language' value='en-US' /></object></div>                
+````{js, embedcode7, echo = FALSE}                   
+var divElement = document.getElementById('viz1705017487341');                 var vizElement = divElement.getElementsByTagName('object')[0];                vizElement.style.width='100%';
+vizElement.style.height=(divElement.offsetWidth*0.75)+'px';                   var scriptElement = document.createElement('script');                    scriptElement.src = 'https://public.tableau.com/javascripts/api/viz_v1.js';  vizElement.parentNode.insertBefore(scriptElement, vizElement);
+````
+1) The graph shows that the average minutes spent on sedentary engagement (712.2) and light active engagement (216.9) are both more than that spent on very active engagement(25.2), except for that spent on fairly active engagement(18).
+2) This insight can be utilized target and encourage more to make decisions about spending more time engaging very actively to improve their fitness.
+
+###   Comparing Tracker Total Active Distance by Types
+
+<div class='tableauPlaceholder' id='viz1705101154881' style='position: relative'><noscript><a href='#'><img alt='Tracker Total Active Distance by Types ' src='https:&#47;&#47;public.tableau.com&#47;static&#47;images&#47;Do&#47;DonutViz1&#47;TrackerTotalActiveDistancebyTypes&#47;1_rss.png' style='border: none' /></a></noscript><object class='tableauViz'  style='display:none;'><param name='host_url' value='https%3A%2F%2Fpublic.tableau.com%2F' /> <param name='embed_code_version' value='3' /> <param name='site_root' value='' /><param name='name' value='DonutViz1&#47;TrackerTotalActiveDistancebyTypes' /><param name='tabs' value='no' /><param name='toolbar' value='yes' /><param name='static_image' value='https:&#47;&#47;public.tableau.com&#47;static&#47;images&#47;Do&#47;DonutViz1&#47;TrackerTotalActiveDistancebyTypes&#47;1.png' /> <param name='animate_transition' value='yes' /><param name='display_static_image' value='yes' /><param name='display_spinner' value='yes' /><param name='display_overlay' value='yes' /><param name='display_count' value='yes' /><param name='language' value='en-US' /></object></div>
+````{js, embedcode8, echo = FALSE}                    
+var divElement = document.getElementById('viz1705101154881');                 var vizElement = divElement.getElementsByTagName('object')[0];                vizElement.style.width='100%';
+vizElement.style.height=(divElement.offsetWidth*0.75)+'px';                   var scriptElement = document.createElement('script');                    scriptElement.src = 'https://public.tableau.com/javascripts/api/viz_v1.js';  vizElement.parentNode.insertBefore(scriptElement, vizElement);
+````
+1) It can be inferred from the chart that those who engaged in light physical activity covered 61.74% of the tracked total active distances, those who engaged very actively covered 27.77% while those who engaged moderately covered 10.49% of the tracked total active distance respectively.
+2) This information is useful for encouraging more people to engage in high level physical activities which have consequential physical and mental health benefits.
+
+## Answers the Business Questions 
+## Some Trends in the Smart Device Usage
+  - The positive correlations between Tracker distance and Calories; very active minutes and Calories; and Total Steps and Calories, invariably suggest that as physical activity increases with time, the amount of energy/calories expended or burnt increases. This could be indicative of a healthy lifestyle.
+  - The positive correlation between total hours asleep and total time in bed, is suggestive of a healthy sleep routine.
+  - there isa large difference between sedentary hours and total hours asleep. This implies that the more time engaged in little or less physical activity reduces the quality of sleep.
+  - The consumers appear to actively engage more physically in the evenings (1800 - 1900) compared to other times of the day.
+  - Those who engaged more actively covered more total distance than those who engaged moderately, but less when compared to those who engaged lightly.
+
+## How could those trends apply to Bellabeat customers
+  -The trends could be made applicable to bellabeat customers as they elicit views into the lifestyle of the consumers viz-a-viz their physical activity, sleep and sedentary engagements.
+
+## How could these trends help influence Bellabeat marketing strategy
+The trends could afford bellabeat the opportunity to appreciate their target customers and their needs, and be able to adapt their products and marketing strategies to this effect. These could be health promotion through:
+1) Emphasizing the importance of regular exercises and attendant implications on physical, mental and social well-being.
+2) Incorporating interactive tools in their App device that furnish customers with individualized information on their most active hours  in order to assist them in maximizing their exercise periods/routines.
+3) Emphasizing the importance and benefits of the use of their App to monitor physical activity and sleep patterns in order to be able to make informed decisions about improving their overall well-being.
+4) Addition of a tool in their App with different types of active exercises to help customers schedule and plan exercise routines and with a reminder tool to alert them of exercise time
+
+## Main Findings
+  - There is a positive correlation between active physical exercise and the amount of calories expended.
+  - There is also a positive relationship between the time consumers stayed in bed and the time they stayed asleep. While the more the sedentary hours, the less the quality of sleep and this implied a negative correlation.
+  - Consumers who engaged very actively covered more distance than those who engaged moderately.
+
+## Next Steps
+It is advisable to use an updated set of the data which is current and obtained from an ideal sample size that will give a reflection of the population of people who use the device; like a sample of a confidence level between 90% to 95% and a margin of error of 1-5, to carry out further analysis before recommendations be made for present business decisions.
